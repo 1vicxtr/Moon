@@ -1,20 +1,24 @@
-function App() {
+function Header() {
   const div = document.createElement('div');
-  div.innerHTML += `<p>Este es el footer</p>`;
+  div.innerHTML += `<Header>`;
+  div.innerHTML += `    <h2>Este es el header!</h2>`;
+  div.innerHTML += `</Header>`;
   return div;
 }
 
-function xd() {
+function App() {
   const div = document.createElement('div');
-  div.innerHTML += `<h1>Bienvenido a Moon 🚀</h1>`;
-  div.innerHTML += `<h2>Hola!</h2>`;
-  div.innerHTML += `<p style ="color:red;">Este es el header</p>`;
+  div.innerHTML += `<main>`;
+  div.innerHTML += `    <h1>Este es el main</h1>`;
+  div.innerHTML += `</main>`;
   return div;
 }
 
 function Footer() {
   const div = document.createElement('div');
-  div.innerHTML += `<footer>Footer</footer>`;
+  div.innerHTML += `<footer>`;
+  div.innerHTML += `    <h3>Footer</h3>`;
+  div.innerHTML += `</footer>`;
   return div;
 }
 
