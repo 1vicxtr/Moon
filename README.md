@@ -1,16 +1,27 @@
 # Moon 
+
 This repository was created for Moon, a React-inspired language. Moon doesn't require any libraries or servers; everything you need is in this repository.
+
 ## Description
+
 Just as the moon has phases, front-end web development also evolves in different stages. That's why the name Moon fits perfectly. You don't need servers or external programs: everything you need is right here, in this folder.
+
+
 ## Installation
+
 1. Clone my repository: 
  git clone https://github.com/1vicxtr/Moon.git
-2. Now you'll have my repository
-in the /components/ folder, where you'll create .mn files.
-3. If you're using Linux, you'll have the option to run ./watcher.
-The executable will call the compiler every time you save a .mn file, saving you time.
-4. If you are using Windows you will need to run moon-compiler.exe
-***
+2. It will give you my folder
+In index.html, the bundle.js file, which is the Moon interpreter, is already connected.
+3. In the /compiler folder are the lexers and parsers (compilers)
+4. The .mn (moon) files will go in the components/ folder.
+
+## How to use the compiler
+
+- If you are using Windows, just run moon-compiler (if it doesn't work, contact me).
+- If you are using Linux, just use this command ./watcher
+
+
 # Syntax 
 
 
