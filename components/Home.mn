@@ -1,3 +1,7 @@
 component Home{
-    h1(text: "Hello!");
+  
+p(text: "Mensaje");
+h1(text: "Hello Word"); 
+int n = 5;
+string = "hello word!";
 }
