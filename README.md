@@ -3,11 +3,32 @@ This repository was created for Moon, a React-inspired language. Moon doesn't re
 ## Description
 Just as the moon has phases, front-end web development also evolves in different stages. That's why the name Moon fits perfectly. You don't need servers or external programs: everything you need is right here, in this folder.
 ## Installation
-1. Clone the repository
-2. in the /components folder is where the new .mn files will be created.
-3. In index.html it will only add the renders of the .mn files.
-4. Once you have the render and the .mn files, you will need to run the executables for your operating system (Linux, macOS, Windows).
-5. When you run the compiler you will need to open the index.html file, I am currently working on a better system.
+1. Clone my repository: 
+ git clone https://github.com/1vicxtr/Moon.git
+2. Now you'll have my repository
+in the /components/ folder, where you'll create .mn files.
+3. If you're using Linux, you'll have the option to run ./watcher.
+The executable will call the compiler every time you save a .mn file, saving you time.
+4. If you are using Windows you will need to run moon-compiler.exe
+***
+# Syntax 
+
+
+Moon's syntax is very friendly.
+~~~~
+// Home.mn
+component Home{
+
+ p(text: "Mensaje");
+
+ h1(text: "Hello Word"); 
+
+ int n = 5;
+ 
+ string = "hello word!";
+}
+~~~~
+
 ***
 ## Version
-Moon is currently in beta (v1). For now, you can write HTML code like in React and it can be reused.
+Moon is in its first quarter phase (v1.1), so you can now write HTML tags and text inside them. In addition to declaring variables (int and string), I'm of course working on improving the syntax.
