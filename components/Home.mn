@@ -1,7 +1,5 @@
 component Home{
-  
-p(text: "Mensaje");
-h1(text: "Hello Word"); 
-int n = 5;
-string = "hello word!";
+
+h1(text: "Hello is H1!");
+
 }

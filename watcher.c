@@ -3,6 +3,7 @@
 #include <unistd.h>
 #include <sys/inotify.h>
 #include <sys/wait.h>
+#include <string.h>
 
 #define EVENT_SIZE (sizeof(struct inotify_event))
 #define BUF_LEN (1024 * (EVENT_SIZE + 16))
@@ -33,22 +34,42 @@ int main() {
         exit(EXIT_FAILURE);
     }
 
-    wd = inotify_add_watch(fd, "./components/Home.mn", IN_MODIFY);
+    wd = inotify_add_watch(fd, "./components/", IN_MODIFY | IN_CREATE | IN_DELETE);
     if (wd < 0) {
         perror("inotify_add_watch");
         exit(EXIT_FAILURE);
     }
 
-    printf("Iniciando vigilancia. Presiona Ctrl+C para salir.\n");
+    printf("Iniciando vigilancia de la carpeta 'components'. Presiona Ctrl+C para salir.\n");
     
     while (1) {
-        read(fd, buffer, BUF_LEN);
-        execute_command("clear");
-        printf("¡Cambios detectados! Ejecutando moon-compiler...\n");
-        execute_command("./moon-compiler");
+        int length = read(fd, buffer, BUF_LEN);
+        if (length < 0) {
+            perror("read");
+            exit(EXIT_FAILURE);
+        }
 
-        printf("¡Proceso terminado! Refresca tu navegador para ver los cambios.\n");
-        printf("------------------------------------------------------------------\n");
+        int i = 0;
+        while (i < length) {
+            struct inotify_event *event = (struct inotify_event *) &buffer[i];
+            if (event->len) {
+                // Ahora el watcher reacciona a 'IN_MODIFY' y a 'IN_CREATE'
+                if (event->mask & (IN_MODIFY | IN_CREATE)) {
+                    // Asegúrate de que sea un archivo .mn
+                    if (strstr(event->name, ".mn") != NULL) {
+                        char command[512];
+                         execute_command("clear");
+                        sprintf(command, "./moon-compiler ./components/%s", event->name);
+                        
+                        printf("¡Cambios detectados en %s! Compilando...\n", event->name);
+                        execute_command(command);
+                        printf("¡Proceso terminado! Refresca tu navegador para ver los cambios.\n");
+                        printf("------------------------------------------------------------------\n");
+                    }
+                }
+            }
+            i += EVENT_SIZE + event->len;
+        }
     }
 
     inotify_rm_watch(fd, wd);

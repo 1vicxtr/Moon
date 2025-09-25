@@ -4,25 +4,8 @@
 #include <stdlib.h>
 
 const char *validTags[] = {
-    "p",
-    "h1",
-    "h2",
-    "div",
-    "span",
-    "a",
-    "img",
-    "ul",
-    "li",
-    "br",
-    "strong",
-    "em",
-    "hr",
-    "form",
-    "input",
-    "button",
-    "label",
-    "video",
-    "audio",
+    "p", "h1", "h2", "div", "span", "a", "img", "ul", "ol", "li", "br",
+    "strong", "em", "form", "input", "button", "label", "video", "audio",
     NULL
 };
 
@@ -35,97 +18,81 @@ int isValidTag(const char *tagName) {
     return 0;
 }
 
-FILE *outputFile;
-
-void parseFile() {
-    outputFile = fopen("bundle.js", "w");
-    if (!outputFile) {
-        printf("Error: No se puede crear el archivo bundle.js\n");
-        return;
-    }
-
+void parseFile(FILE* outputFile) {
     curtok = nextToken();
-    while (curtok.type != T_EOF) {
-        switch (curtok.type) {
-            case T_COMPONENT:
+    if (curtok.type == T_COMPONENT) {
+        curtok = nextToken();
+        if (curtok.type == T_IDENT) {
+            char componentName[MAX_TOKEN_LEN];
+            strcpy(componentName, curtok.text);
+            fprintf(outputFile, "function %s() {\n", componentName);
+            
+            curtok = nextToken();
+            if (curtok.type == T_LBRACE) {
                 curtok = nextToken();
-                if (curtok.type == T_IDENT) {
-                    fprintf(outputFile, "function %s() {\n", curtok.text);
-                    curtok = nextToken();
-                }
-                break;
-            case T_STRING_TYPE:
-            case T_INT:
-                curtok = nextToken();
-                if (curtok.type == T_IDENT) {
-                    fprintf(outputFile, "    let %s", curtok.text);
-                    curtok = nextToken();
-                    if (curtok.type == T_EQ) {
+                while (curtok.type != T_RBRACE && curtok.type != T_EOF) {
+                    if (curtok.type == T_STRING_TYPE || curtok.type == T_INT) {
                         curtok = nextToken();
-                        if (curtok.type == T_STRING) {
-                            fprintf(outputFile, " = \"%s\";\n", curtok.text);
-                        } else if (curtok.type == T_NUMBER) {
-                            fprintf(outputFile, " = %s;\n", curtok.text);
-                        }
-                    }
-                }
-                break;
-            case T_RBRACE:
-                fprintf(outputFile, "}\n");
-                break;
-            case T_IDENT:
-                {
-                    char tagName[MAX_TOKEN_LEN];
-                    strcpy(tagName, curtok.text);
-                    if (!isValidTag(tagName)) {
-                        fprintf(stderr, "Error: Etiqueta HTML no válida: %s\n", tagName);
-                        exit(1);
-                    }
-                    
-                    curtok = nextToken();
-                    if (curtok.type == T_LPAREN) {
-                        char finalHtml[4096] = "";
-                        char *htmlPtr = finalHtml;
-                        char textContent[MAX_TOKEN_LEN] = "";
-
-                        // Bucle para procesar atributos
-                        while (curtok.type != T_RPAREN && curtok.type != T_EOF) {
+                        if (curtok.type == T_IDENT) {
+                            fprintf(outputFile, "    let %s", curtok.text);
                             curtok = nextToken();
-                            if (curtok.type == T_IDENT) {
-                                char attrName[MAX_TOKEN_LEN];
-                                strcpy(attrName, curtok.text);
-
+                            if (curtok.type == T_EQ) {
                                 curtok = nextToken();
-                                if (curtok.type == T_COLON) {
+                                if (curtok.type == T_STRING) {
+                                    fprintf(outputFile, " = \"%s\";\n", curtok.text);
+                                } else if (curtok.type == T_NUMBER) {
+                                    fprintf(outputFile, " = %s;\n", curtok.text);
+                                }
+                            }
+                        }
+                    } else if (curtok.type == T_IDENT && isValidTag(curtok.text)) {
+                        char tagName[MAX_TOKEN_LEN];
+                        strcpy(tagName, curtok.text);
+                        char textContent[MAX_TOKEN_LEN] = "";
+                        char attributeString[MAX_TOKEN_LEN] = "";
+
+                        curtok = nextToken();
+                        if (curtok.type == T_LPAREN) {
+                            curtok = nextToken();
+                            while (curtok.type != T_RPAREN && curtok.type != T_EOF) {
+                                if (curtok.type == T_IDENT) {
+                                    char attrName[MAX_TOKEN_LEN];
+                                    strcpy(attrName, curtok.text);
                                     curtok = nextToken();
-                                    if (curtok.type == T_STRING) {
-                                        if (strcmp(attrName, "text") == 0) {
-                                            strcpy(textContent, curtok.text);
-                                        } else {
-                                            // Lógica para otros atributos, si es necesario
+                                    if (curtok.type == T_COLON) {
+                                        curtok = nextToken();
+                                        if (curtok.type == T_STRING) {
+                                            if (strcmp(attrName, "text") == 0) {
+                                                strcpy(textContent, curtok.text);
+                                            } else {
+                                                strcat(attributeString, " ");
+                                                strcat(attributeString, attrName);
+                                                strcat(attributeString, "=\"");
+                                                strcat(attributeString, curtok.text);
+                                                strcat(attributeString, "\"");
+                                            }
                                         }
                                     }
                                 }
-                            }
-                            curtok = nextToken();
-                            if(curtok.type == T_COMMA) {
                                 curtok = nextToken();
+                                if (curtok.type == T_COMMA) {
+                                    curtok = nextToken();
+                                }
                             }
                         }
-
-                        // Genera el código para la etiqueta
+                        
                         if (strlen(textContent) > 0) {
-                            fprintf(outputFile, "    document.body.innerHTML += `<%s>%s</%s>`;\n", tagName, textContent, tagName);
+                            fprintf(outputFile, "    document.body.innerHTML += `<%s%s>%s</%s>`;\n", tagName, attributeString, textContent, tagName);
                         } else {
-                            fprintf(outputFile, "    document.body.innerHTML += `<%s></%s>`;\n", tagName, tagName);
+                            fprintf(outputFile, "    document.body.innerHTML += `<%s%s/>`;\n", tagName, attributeString);
                         }
                     }
+                    curtok = nextToken();
                 }
-                break;
-            default:
-                break;
+                fprintf(outputFile, "}\n");
+            }
         }
-        curtok = nextToken();
+    } else {
+        fprintf(stderr, "Error: Se esperaba 'component' al inicio del archivo.\n");
     }
-    fclose(outputFile);
 }

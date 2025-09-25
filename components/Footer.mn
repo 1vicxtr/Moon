@@ -1,0 +1,3 @@
+component Footer{
+h2(text: "Hello es footer !"
+}
